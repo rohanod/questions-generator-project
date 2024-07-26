@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #chatWindow {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 60%;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .response {
+            margin: 10px 0;
+        }
+        .importBtn {
+            margin-left: 10px;
+        }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat with AI</h1>
+    <textarea id="questionBox" rows="4" cols="50"></textarea>
+    <br><br>
+    <button id="openChatBtn">Chat with AI</button>
+
+    <div id="overlay"></div>
+
+    <div id="chatWindow">
+        <h2>Chat Window</h2>
+        <div id="chatContent"></div>
+        <textarea id="chatInput" rows="2" cols="40"></textarea>
+        <br><br>
+        <button id="sendMsgBtn">Send</button>
+        <button id="closeChatBtn">Close</button>
+    </div>
+
+    <script>
+        document.getElementById('openChatBtn').addEventListener('click', openChatWindow);
+        document.getElementById('closeChatBtn').addEventListener('click', closeChatWindow);
+        document.getElementById('overlay').addEventListener('click', closeChatWindow);
+        document.getElementById('sendMsgBtn').addEventListener('click', sendMessage);
+
+        function openChatWindow() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('chatWindow').style.display = 'block';
+        }
+
+        function closeChatWindow() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('chatWindow').style.display = 'none';
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput').value;
+            const chatContent = document.getElementById('chatContent');
+
+            if (input.trim() === '') return;
+
+            const userMessage = document.createElement('div');
+            userMessage.className = 'response';
+            userMessage.textContent = `You: ${input}`;
+            chatContent.appendChild(userMessage);
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer YOUR_API_KEY'
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You will be a question generator, I will give you a topic and you will generate some questions in a json list.
+
+                                You will only respond like this and nothing else:
+                                {
+                                  "questions": [
+                                    {
+                                      "stem": "Which period is known as the \\"Age of Dinosaurs\\"?",
+                                      "options": [
+                                        {
+                                          "text": "Cambrian",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Jurassic",
+                                          "isCorrect": true
+                                        },
+                                        {
+                                          "text": "Carboniferous",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Permian",
+                                          "isCorrect": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "stem": "Which of the following dinosaurs is known for having three horns on its face?",
+                                      "options": [
+                                        {
+                                          "text": "Stegosaurus",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Brachiosaurus",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Triceratops",
+                                          "isCorrect": true
+                                        },
+                                        {
+                                          "text": "Velociraptor",
+                                          "isCorrect": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "stem": "What was the primary diet of the Tyrannosaurus rex?",
+                                      "options": [
+                                        {
+                                          "text": "Plants",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Fish",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Insects",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Meat",
+                                          "isCorrect": true
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "stem": "Which of these dinosaurs had a long neck and was a herbivore?",
+                                      "options": [
+                                        {
+                                          "text": "Velociraptor",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Spinosaurus",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Apatosaurus",
+                                          "isCorrect": true
+                                        },
+                                        {
+                                          "text": "Pterodactyl",
+                                          "isCorrect": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "stem": "The fossilized remains of which dinosaur were first discovered in North America in 1877?",
+                                      "options": [
+                                        {
+                                          "text": "Stegosaurus",
+                                          "isCorrect": true
+                                        },
+                                        {
+                                          "text": "Diplodocus",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Allosaurus",
+                                          "isCorrect": false
+                                        },
+                                        {
+                                          "text": "Tyrannosaurus rex",
+                                          "isCorrect": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+
+                                When you output the JSON, first make sure that the json you output is related to the topic the user gave you.`
+                            },
+                            { role: 'user', content: input }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                const aiMessage = data.choices[0].message.content;
+
+                const aiResponse = document.createElement('div');
+                aiResponse.className = 'response';
+                aiResponse.innerHTML = `AI: <pre>${aiMessage}</pre>`;
+                chatContent.appendChild(aiResponse);
+
+                const importButton = document.createElement('button');
+                importButton.className = 'importBtn';
+                importButton.textContent = 'Import Question';
+                importButton.addEventListener('click', () => importResponse(aiMessage));
+                aiResponse.appendChild(importButton);
+
+                document.getElementById('chatInput').value = '';
+                chatContent.scrollTop = chatContent.scrollHeight;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function importResponse(response) {
+            document.getElementById('questionBox').value = response;
+            closeChatWindow();
+        }
+    </script>
+</body>
+</html>
